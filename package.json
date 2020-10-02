@@ -8,13 +8,17 @@
     "@testing-library/user-event": "^7.1.2",
     "axios": "^0.20.0",
     "bootstrap": "^4.5.2",
+    "history": "^4.9.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3",
-    "reactstrap": "^8.6.0"
+    "reactstrap": "^8.6.0",
+    "rxjs": "^6.6.3"
   },
+
   "scripts": {
+    "startWebpack": "webpack-dev-server --open",
     "start": "PORT=8081 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

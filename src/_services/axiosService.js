@@ -1,9 +1,11 @@
 import axios from "axios";
+import config from "../config/config";
 
-const API_URL = "http://localhost:3000/";
+// const apiUrl = '{0}:{1}/'.format(config.API_URL, config.API_PORT);
+const apiUrl = config.API_URL + ':' + config.API_PORT + "/";
 
 const securedAxiosInstance = axios.create({
-    baseURL: API_URL,
+    baseURL: apiUrl,
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",
@@ -11,22 +13,22 @@ const securedAxiosInstance = axios.create({
 });
 
 const plainAxiosInstance = axios.create({
-    baseURL: API_URL,
+    baseURL: apiUrl,
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",
     },
 });
 
-securedAxiosInstance.interceptors.request.use((config) => {
-    const method = config.method.toUpperCase();
+securedAxiosInstance.interceptors.request.use((_config) => {
+    const method = _config.method.toUpperCase();
     if (method !== "OPTIONS" && method !== "GET") {
-        config.headers = {
-            ...config.headers,
-            "X-CSRF-TOKEN": localStorage.csrf,
+        _config.headers = {
+            ..._config.headers,
+            "X-CSRF-TOKEN": localStorage.getItem('X-CSRF-TOKEN'),
         };
     }
-    return config;
+    return _config;
 });
 
 securedAxiosInstance.interceptors.response.use(null, (error) => {
@@ -39,16 +41,16 @@ securedAxiosInstance.interceptors.response.use(null, (error) => {
         return plainAxiosInstance
             .post("/refresh", {}, {headers: {"X-CSRF-TOKEN": localStorage.csrf}})
             .then((response) => {
-                localStorage.csrf = response.data.csrf;
-                localStorage.signedIn = true;
+                localStorage.setItem('X-CSRF-TOKEN', response.data.csrf)
+                localStorage.setItem('signedIn', true);
                 // After another successfull refresh - repeat original request
                 let retryConfig = error.response.config;
                 retryConfig.headers["X-CSRF-TOKEN"] = localStorage.csrf;
                 return plainAxiosInstance.request(retryConfig);
             })
             .catch((error) => {
-                delete localStorage.csrf;
-                delete localStorage.signedIn;
+                localStorage.removeItem('X-CSRF-TOKEN')
+                localStorage.removeItem('signedIn')
                 // redirect to signin if refresh fails
                 window.location.replace("/login");
                 return Promise.reject(error);
@@ -58,4 +60,4 @@ securedAxiosInstance.interceptors.response.use(null, (error) => {
     }
 });
 
-export {securedAxiosInstance, plainAxiosInstance};
+export { securedAxiosInstance, plainAxiosInstance };
