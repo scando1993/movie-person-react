@@ -3,6 +3,7 @@ import {Button, Container, FormGroup, Modal, ModalBody, ModalFooter, ModalHeader
 import "bootstrap/dist/css/bootstrap.min.css";
 import {plainAxiosInstance, securedAxiosInstance} from "../../_services/axiosService";
 import './People.css'
+import {authenticationService, peopleService} from "../../_services";
 
 class People extends React.Component{
     state = {
@@ -35,13 +36,14 @@ class People extends React.Component{
     };
 
     componentDidMount() {
-        plainAxiosInstance.get(`api/v1/people`).then((res) => {
-            this.setState({
-                loading: false
+        authenticationService.currentUser.subscribe( x => this.setState({ currentUser: x }));
+        peopleService.all()
+            .then( people => {
+                this.setState({
+                    loading: false
+                });
+                this.setState({ people });
             });
-            const people = res.data;
-            this.setState({ people });
-        });
     }
 
     showModalUpdate = (person) => {
@@ -130,57 +132,66 @@ class People extends React.Component{
     };
 
     render() {
+        const { currentUser } = this.state;
         return (
             <>
-                <Container>
-                    <br />
-                    <Button color="success" onClick={() => this.showModalCreate()}>
-                        Create
-                    </Button>
-                    <br />
-                    <br />
-
-                    <Table>
-                        <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>Aliases</th>
-                            <th>Movies as:</th>
-                            <th>Actions</th>
-                        </tr>
-                        </thead>
-
-                        <tbody>
-                        {this.state.people.map((dato) => (
-                            <tr key={ dato.id }>
-                                <td>{ dato.id }</td>
-                                <td>{ dato.firstName }</td>
-                                <td>{ dato.lastName }</td>
-                                <td>{ dato.aliases }</td>
-                                <td>
-                                    <div className="d-flex flex-column">
-                                        <Button color="secundary" onClick={() => this.showMoviesAsActor(dato)}>
-                                            Actor/Actress
-                                        </Button>
-                                        <Button color="secundary" onClick={() => this.showMoviesAsDirector(dato)}>
-                                            Director
-                                        </Button>
-                                        <Button color="secundary" onClick={() => this.showMoviesAsProducer(dato)}>
-                                            Producer
-                                        </Button>
-                                    </div>
-                                </td>
-                                <td>
-                                    <Button color="primary" onClick={() => this.showModalUpdate(dato)}>Edit</Button>
-                                    <Button color="danger" onClick={() => this.deletePerson(dato)}>Delete</Button>
-                                </td>
+                <div className={'mx-2'}>
+                    { currentUser &&
+                    <div className={'my-1'}>
+                        <Button color="success" onClick={() => this.showModalCreate()}>
+                            Create
+                        </Button>
+                    </div>
+                    }
+                    <div>
+                        <Table>
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Aliases</th>
+                                { currentUser && <th>Movies as:</th> }
+                                { currentUser && <th>Actions</th> }
                             </tr>
-                        ))}
-                        </tbody>
-                    </Table>
-                </Container>
+                            </thead>
+
+                            <tbody>
+                            {this.state.people.map((dato) => (
+                                <tr key={ dato.id }>
+                                    <td>{ dato.id }</td>
+                                    <td>{ dato.firstName }</td>
+                                    <td>{ dato.lastName }</td>
+                                    <td>{ dato.aliases }</td>
+                                    { currentUser &&
+                                    <td>
+                                        <div className="d-flex flex-column">
+                                            <Button color="secundary" onClick={() => this.showMoviesAsActor(dato)}>
+                                                Actor/Actress
+                                            </Button>
+                                            <Button color="secundary" onClick={() => this.showMoviesAsDirector(dato)}>
+                                                Director
+                                            </Button>
+                                            <Button color="secundary" onClick={() => this.showMoviesAsProducer(dato)}>
+                                                Producer
+                                            </Button>
+                                        </div>
+                                    </td>
+                                    }
+
+                                    { currentUser &&
+                                    <td>
+                                        <Button color="primary" onClick={() => this.showModalUpdate(dato)}>Edit</Button>
+                                        <Button color="danger" onClick={() => this.deletePerson(dato)}>Delete</Button>
+                                    </td>
+                                    }
+
+                                </tr>
+                            ))}
+                            </tbody>
+                        </Table>
+                    </div>
+                </div>
                 {/*Action modal update data*/}
                 <Modal isOpen={this.state.modalUpdate}>
                     <ModalHeader>

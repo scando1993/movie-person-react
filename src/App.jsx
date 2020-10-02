@@ -29,26 +29,19 @@ class App extends React.Component{
         return (
             <Router history={ history }>
                 <div>
-                    {currentUser &&
                     <nav className="navbar navbar-expand navbar-dark bg-dark">
                         <div className="navbar-nav">
-                            <Link to="/" className="nav-item nav-link">Home</Link>
+                            <Link to="/home" className="nav-item nav-link">Home</Link>
                             <Link to="/movies" className="nav-item nav-link">Movies</Link>
                             <Link to="/people" className="nav-item nav-link">People</Link>
-                            <a onClick={this.logout} className="nav-item nav-link">Logout</a>
+                            { currentUser
+                                ? <a onClick={this.logout} className="nav-item nav-link">Logout</a>
+                                : <a onClick={this.logout} className="nav-item nav-link">Login</a>
+                            }
                         </div>
                     </nav>
-                    }
-                    <div className="jumbotron">
-                        <div className="container">
-                            <div className="row">
-                                <div className="col-md-6 offset-md-3">
-                                    {/*<Route path="/" component={Home} />*/}
-                                    <Route path="/login" component={Login} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <Route path={"/login"} component={Login}/>
+                    <Route path={"/home"} component={Home}/>
                     <Route path="/movies" component={Movies}/>
                     <Route path="/people" component={People}/>
                 </div>

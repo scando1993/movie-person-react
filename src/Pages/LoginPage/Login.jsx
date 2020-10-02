@@ -18,7 +18,7 @@ class Login extends React.Component {
         }
 
         if (authenticationService.currentUserValue){
-            this.props.history.push('/')
+            this.props.history.push('/home')
         }
     }
     validateForm() {
@@ -31,13 +31,9 @@ class Login extends React.Component {
         authenticationService.login(this.state.email, this.state.password)
             .then(
                 user => {
-                    const { from } = this.props.location.state || { from: { pathname: "/" }}
+                    const { from } = this.props.location.state || { from: { pathname: "/home" }}
                     this.props.history.push(from);
                 });
-        // plainAxiosInstance
-        //     .post("signup", {email: email, password: password})
-        //     .then((response) => signinSuccessful(response))
-        //     .catch((error) => signinFailed(error));
     }
     render() {
         return (

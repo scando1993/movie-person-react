@@ -1,6 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { handleResponse } from '../_helpers'
-import { plainAxiosInstance } from "./axiosService";
+import { axiosService } from "./axiosService";
+import {handleTokenResponse} from "../_helpers";
 
 const currentUserSubject = new BehaviorSubject(JSON.parse(localStorage.getItem('currentUser')))
 
@@ -13,13 +14,14 @@ export const authenticationService = {
 }
 
 function signup(username, password){
-    return plainAxiosInstance.post('signin', {
+    return axiosService.plainAxiosInstance.post('signin', {
         email: username,
         password: password
     })
         .then(handleResponse)
-        .then(data => {
-            if (data.csrf){
+        .then(handleTokenResponse)
+        .then( valid_csrf => {
+            if (valid_csrf){
                 const user = {
                     email: username,
                     password: password
@@ -32,13 +34,14 @@ function signup(username, password){
 }
 
 function login(username, password){
-    return plainAxiosInstance.post('signup',{
+    return axiosService.plainAxiosInstance.post('signup',{
         email: username,
         password: password
     })
         .then(handleResponse)
-        .then(data => {
-            if (data.csrf){
+        .then(handleTokenResponse)
+        .then(valid_csrf => {
+            if (valid_csrf){
                 const user = {
                     email: username,
                     password: password

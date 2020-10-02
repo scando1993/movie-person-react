@@ -18,9 +18,8 @@ class Home extends React.Component{
         return (
             <>
                 <div>
-                    <h1>Hi!</h1>
-                    <p>You're logged in with React & JWT!!</p>
-                    <h3>Users from secure api end point:</h3>
+                    <h1>Test React Native</h1>
+                    <p>Enter Movies or People to see the public exposed endpoints</p>
                 </div>
             </>
         );

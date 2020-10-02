@@ -4,6 +4,8 @@ import config from "../config/config";
 // const apiUrl = '{0}:{1}/'.format(config.API_URL, config.API_PORT);
 const apiUrl = config.API_URL + ':' + config.API_PORT + "/";
 
+;
+
 const securedAxiosInstance = axios.create({
     baseURL: apiUrl,
     withCredentials: true,
@@ -59,5 +61,10 @@ securedAxiosInstance.interceptors.response.use(null, (error) => {
         return Promise.reject(error);
     }
 });
+
+export const axiosService = {
+    securedAxiosInstance,
+    plainAxiosInstance
+}
 
 export { securedAxiosInstance, plainAxiosInstance };

@@ -13,30 +13,47 @@ import {
     FormGroup,
     ModalFooter,
 } from "reactstrap";
+import {authenticationService, movieService} from "../../_services";
 
 class Movies extends React.Component {
     state = {
+        currentUser: null,
         movies: [],
+        movie: {
+            id: "",
+            title: "",
+            releaseYear: "",
+            casting: [],
+            directors: [],
+            producers: []
+        },
         modalUpdate: false,
         modalCreate: false,
         modalCasting: false,
+        modalDirector: false,
+        modalProducer: false,
         form: {
             id: "",
             title: "",
             releaseYear: "",
         },
-        casting:{},
+        formPerson: {
+            firstName: "",
+            lastName: "",
+            aliases: ""
+        },
         loading: true
     };
 
     componentDidMount() {
-        plainAxiosInstance.get(`api/v1/movies`).then((res) => {
-            this.setState({
-                loading: false
+        authenticationService.currentUser.subscribe(x => this.setState({ currentUser: x }));
+        movieService.all()
+            .then( movies => {
+                this.setState({
+                    loading: false
+                });
+                this.setState({movies});
             });
-            const movies = res.data;
-            this.setState({movies});
-        });
     }
 
     showModalUpdate = (movie) => {
@@ -64,7 +81,7 @@ class Movies extends React.Component {
         let index = 0;
         let list = this.state.movies;
         list.map((item) => {
-            if (movie.id == item.id) {
+            if (movie.id === item.id) {
                 list[index].title = movie.title;
                 list[index].releaseYear = movie.releaseYear;
             }
@@ -75,11 +92,11 @@ class Movies extends React.Component {
 
     deleteMovie = (movie) => {
         let opcion = window.confirm("Are you sure you want delete it? " + movie.id);
-        if (opcion == true) {
+        if (opcion === true) {
             let index = 0;
             let tmpMovies = this.state.movies;
             tmpMovies.map((item) => {
-                if (movie.id == item.id) {
+                if (movie.id === item.id) {
                     tmpMovies.splice(index, 1);
                 }
                 index++;
@@ -111,51 +128,53 @@ class Movies extends React.Component {
     };
 
     render() {
+        const { currentUser } = this.state;
         return (
             <>
-                <Container>
-                    <br/>
-                    <Button color="success" onClick={() => this.showModalCreate()}>
-                        Create
-                    </Button>
-                    <br/>
-                    <br/>
-
-                    <Table>
-                        <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Title</th>
-                            <th>Release Year</th>
-                            <th>Actions</th>
-                        </tr>
-                        </thead>
-
-                        <tbody>
-                        {this.state.movies.map((dato) => (
-                            <tr key={dato.id}>
-                                <td>{dato.id}</td>
-                                <td>{dato.title}</td>
-                                <td>{dato.releaseYear}</td>
-                                <td>
-                                    <Button
-                                        color="primary"
-                                        onClick={() => this.showModalUpdate(dato)}
-                                    >
-                                        Edit
-                                    </Button>{" "}
-                                    <Button
-                                        color="danger"
-                                        onClick={() => this.DeleteMovie(dato)}
-                                    >
-                                        Delete
-                                    </Button>
-                                </td>
+                <div className={'mx-2'}>
+                    { currentUser &&
+                    <div className={'my-1'}>
+                        <Button color="success" onClick={() => this.showModalCreate()}>
+                            Create
+                        </Button>
+                    </div>
+                    }
+                    <div>
+                        <Table>
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Release Year</th>
+                                {
+                                    currentUser && <th>Actions</th>
+                                }
                             </tr>
-                        ))}
-                        </tbody>
-                    </Table>
-                </Container>
+                            </thead>
+
+                            <tbody>
+                            {this.state.movies.map((dato) => (
+                                <tr key={dato.id}>
+                                    <td>{dato.id}</td>
+                                    <td>{dato.title}</td>
+                                    <td>{dato.releaseYear}</td>
+                                    { currentUser &&
+                                    <td>
+                                        <Button color="primary" onClick={() => this.showModalUpdate(dato)}>
+                                            Edit
+                                        </Button>{" "}
+                                        <Button color="danger" onClick={() => this.deleteMovie(dato)}>
+                                            Delete
+                                        </Button>
+                                    </td>
+                                    }
+
+                                </tr>
+                            ))}
+                            </tbody>
+                        </Table>
+                    </div>
+                </div>
 
                 <Modal isOpen={this.state.modalUpdate}>
                     <ModalHeader>
@@ -202,7 +221,7 @@ class Movies extends React.Component {
                     <ModalFooter>
                         <Button
                             color="primary"
-                            onClick={() => this.EditMovie(this.state.form)}
+                            onClick={() => this.editMovie(this.state.form)}
                         >
                             Edit
                         </Button>
