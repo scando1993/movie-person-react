@@ -25,6 +25,8 @@ function get(id){
 }
 
 function create(person){
+    console.log(person)
+    console.log(peopleUrl)
     // TODO: Validate person model
     return axiosService.securedAxiosInstance.post(peopleUrl, person)
         .then(handleResponse);
@@ -32,7 +34,7 @@ function create(person){
 
 function update(id, person){
     const person_id = peopleUrl + '/' + id;
-    return axiosService.securedAxiosInstance.put(peopleUrl, person)
+    return axiosService.securedAxiosInstance.put(person_id, person)
         .then(handleResponse);
 }
 

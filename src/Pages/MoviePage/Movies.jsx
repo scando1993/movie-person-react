@@ -62,61 +62,61 @@ class Movies extends React.Component {
             modalUpdate: true,
         });
     };
-
-    closeModalUpdate = () => {
-        this.setState({modalUpdate: false});
-    };
-
     showModalCreate = () => {
         this.setState({
             modalCreate: true,
         });
     };
 
-    closeModalCreate = () => {
-        this.setState({modalCreate: false});
-    };
-
-    editMovie = (movie) => {
-        let index = 0;
-        let list = this.state.movies;
-        list.map((item) => {
-            if (movie.id === item.id) {
-                list[index].title = movie.title;
-                list[index].releaseYear = movie.releaseYear;
-            }
-            index++;
+    showCasting = (movie) => {
+        this.setState({
+            movie: movie,
+            modalCasting: true
         });
-        this.setState({data: list, modalUpdate: false});
+    };
+    showDirectors = (movie) => {
+        this.setState({
+            movie: movie,
+            modalDirector: true
+        });
+    };
+    showProducers = (movie) => {
+        this.setState({
+            movie: movie,
+            modalProducer: true
+        });
     };
 
-    deleteMovie = (movie) => {
-        let opcion = window.confirm("Are you sure you want delete it? " + movie.id);
-        if (opcion === true) {
-            let index = 0;
-            let tmpMovies = this.state.movies;
-            tmpMovies.map((item) => {
-                if (movie.id === item.id) {
-                    tmpMovies.splice(index, 1);
-                }
-                index++;
+    // CRUD for movies operations
+    createMovie = () => {
+        let movie = { ...this.state.form };
+        let movieList = this.state.movies;
+        movieService.create(movie)
+            .then(_movie => {
+                movieList.push(_movie);
+                this.setState({ modalCreate: false, movies: movieList });
             });
-            this.setState({movies: tmpMovies, modalUpdate: false});
+    };
+    editMovie = (movie) => {
+        let movies = this.state.movies;
+        movieService.update(movie.id, movie)
+            .then(_movie => {
+                movies[movies.findIndex(x => x.id === movie.id)] = _movie;
+                this.setState({ movies: movies, modalUpdate: false });
+            })
+    };
+    deleteMovie = (movie) => {
+        let option = window.confirm("Are you sure you want delete it? " + movie.id);
+        if (option === true) {
+            let movies = this.state.movies;
+            movieService._delete(movie.id).then( x => {
+                movies.splice(movies.findIndex(x => x.id === movie.id), 1);
+                this.setState({movies: movies, modalUpdate: false});
+            });
         }
     };
 
-    createMovie = () => {
-        let movie = {...this.state.form};
-        movie.id = this.state.movies.length + 1;
-        let movieList = this.state.movies;
-        securedAxiosInstance.post("api/v1/movies", {
-            title: movie.title,
-            releaseYear: movie.releaseYear,
-        });
 
-        movieList.push(movie);
-        this.setState({modalCreate: false, data: movieList});
-    };
 
     handleChange = (e) => {
         this.setState({
@@ -160,6 +160,21 @@ class Movies extends React.Component {
                                     <td>{dato.releaseYear}</td>
                                     { currentUser &&
                                     <td>
+                                        <div className="d-flex flex-column">
+                                            <Button color="secundary" onClick={() => this.showCasting(dato)}>
+                                                Casting
+                                            </Button>
+                                            <Button color="secundary" onClick={() => this.showDirectors(dato)}>
+                                                Directors
+                                            </Button>
+                                            <Button color="secundary" onClick={() => this.showProducers(dato)}>
+                                                Producers
+                                            </Button>
+                                        </div>
+                                    </td>
+                                    }
+                                    { currentUser &&
+                                    <td>
                                         <Button color="primary" onClick={() => this.showModalUpdate(dato)}>
                                             Edit
                                         </Button>{" "}
@@ -175,18 +190,15 @@ class Movies extends React.Component {
                         </Table>
                     </div>
                 </div>
-
+                {/*Action modal update data*/}
                 <Modal isOpen={this.state.modalUpdate}>
                     <ModalHeader>
-                        <div>
-                            <h3>Edit Movie</h3>
-                        </div>
+                        <div><h3>Edit Movie</h3></div>
                     </ModalHeader>
 
                     <ModalBody>
                         <FormGroup>
                             <label>Id:</label>
-
                             <input
                                 className="form-control"
                                 readOnly
@@ -219,23 +231,18 @@ class Movies extends React.Component {
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button
-                            color="primary"
-                            onClick={() => this.editMovie(this.state.form)}
-                        >
+                        <Button color="primary" onClick={() => this.editMovie(this.state.form)}>
                             Edit
                         </Button>
-                        <Button color="danger" onClick={() => this.closeModalUpdate()}>
+                        <Button color="danger" onClick={() => this.setState({ modalUpdate: false })}>
                             Cancel
                         </Button>
                     </ModalFooter>
                 </Modal>
-
+                {/*Action modal create data*/}
                 <Modal isOpen={this.state.modalCreate}>
                     <ModalHeader>
-                        <div>
-                            <h3>Create Movie</h3>
-                        </div>
+                        <div><h3>Create Movie</h3></div>
                     </ModalHeader>
 
                     <ModalBody>
@@ -264,16 +271,153 @@ class Movies extends React.Component {
                         <Button color="primary" onClick={() => this.createMovie()}>
                             Create
                         </Button>
-                        <Button
-                            className="btn btn-danger"
-                            onClick={() => this.closeModalCreate()}
-                        >
+                        <Button className="btn btn-danger" onClick={() => this.setState({modalCreate: false})}>
                             Cancel
+                        </Button>
+                    </ModalFooter>
+                </Modal>
+                {/*Action modal movies as actor/actress data*/}
+                <Modal isOpen={this.state.modalCasting}>
+                    <ModalHeader>
+                        <div><h3>Casting</h3></div>
+                    </ModalHeader>
+
+                    <ModalBody>
+                        <Table>
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Aliases</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            {this.state.movie.casting.map((person) => (
+                                <tr key={ 'casting_' + person.id }>
+                                    <td>{ person.id }</td>
+                                    <td>{ person.firstName }</td>
+                                    <td>{ person.lastName }</td>
+                                    <td>{ person.aliases }</td>
+                                    { currentUser &&
+                                    <td>
+                                        <Button className={'mx-1'} color="primary" onClick={() => this.editPersonFromCasting(person)}>Edit</Button>
+                                        <Button className={'mx-1'} color="danger" onClick={() => this.deletePersonFromCasting(person)}>Delete</Button>
+                                    </td>
+                                    }
+                                </tr>
+                            ))}
+                            </tbody>
+                        </Table>
+                    </ModalBody>
+
+                    <ModalFooter>
+                        <Button color="primary" onClick={() => this.addPersonAsCasting()}>
+                            Add person to casting
+                        </Button>
+                        <Button className="btn btn-danger" onClick={() => this.setState({ modalCasting: false })}>
+                            Close
+                        </Button>
+                    </ModalFooter>
+                </Modal>
+                {/*Action modal movies as director data*/}
+                <Modal isOpen={this.state.modalDirector}>
+                    <ModalHeader>
+                        <div><h3>Directors</h3></div>
+                    </ModalHeader>
+
+                    <ModalBody>
+                        <Table>
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Aliases</th>
+                                { currentUser && <th>Actions</th> }
+                            </tr>
+                            </thead>
+
+                            <tbody>{this.state.movie.directors.map((person) => (
+                                <tr key={ 'director_' + person.id }>
+                                    <td>{ person.id }</td>
+                                    <td>{ person.firstName }</td>
+                                    <td>{ person.lastName }</td>
+                                    <td>{ person.aliases }</td>
+                                    { currentUser &&
+                                    <td>
+                                        <Button className={'mx-1'} color="primary" onClick={() => this.editPersonFromDirectors(person)}>Edit</Button>
+                                        <Button className={'mx-1'} color="danger" onClick={() => this.deletePersonFromDirectors(person)}>Delete</Button>
+                                    </td>
+                                    }
+                                </tr>
+                            ))}
+                            </tbody>
+                        </Table>
+                    </ModalBody>
+
+                    <ModalFooter>
+                        <Button color="primary" onClick={() => this.addPersonAsDirector()}>
+                            Add person
+                        </Button>
+                        <Button className="btn btn-danger" onClick={() => this.setState({ modalDirector: false })}>
+                            Close
+                        </Button>
+                    </ModalFooter>
+                </Modal>
+                {/*Action modal movies as producer data*/}
+                <Modal isOpen={this.state.modalProducer}>
+                    <ModalHeader>
+                        <div><h3>Producers</h3></div>
+                    </ModalHeader>
+
+                    <ModalBody>
+                        <Table>
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Aliases</th>
+                                { currentUser && <th>Actions</th> }
+                            </tr>
+                            </thead>
+
+                            <tbody>{this.state.movie.producers.map((person) => (
+                                <tr key={ 'prod_' + person.id }>
+                                    <td>{ person.id }</td>
+                                    <td>{ person.firstName }</td>
+                                    <td>{ person.lastName }</td>
+                                    <td>{ person.aliases }</td>
+                                    { currentUser &&
+                                    <td>
+                                        <Button className={'mx-1'} color="primary" onClick={() => this.editPersonFromProducers(person)}>Edit</Button>
+                                        <Button className={'mx-1'} color="danger" onClick={() => this.deletePersonFromProducers(person)}>Delete</Button>
+                                    </td>
+                                    }
+                                </tr>
+                            ))}
+                            </tbody>
+                        </Table>
+                    </ModalBody>
+
+                    <ModalFooter>
+                        <Button color="primary" onClick={() => this.addPersonAsProducer()}>
+                            Create
+                        </Button>
+                        <Button className="btn btn-danger" onClick={() => this.setState({ modalProducer: false })} >
+                            Close
                         </Button>
                     </ModalFooter>
                 </Modal>
             </>
         );
+    }
+
+    addPersonAsCasting() {
+        
     }
 }
 

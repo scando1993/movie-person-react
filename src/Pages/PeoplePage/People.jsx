@@ -46,6 +46,13 @@ class People extends React.Component{
             });
     }
 
+    // Modals for creation, update
+    showModalCreate = () => {
+        this.setState({
+            modalCreate: true,
+        });
+    };
+
     showModalUpdate = (person) => {
         this.setState({
             form: person,
@@ -53,6 +60,7 @@ class People extends React.Component{
         });
     };
 
+    // Modals for showing values and dependencies
     showMoviesAsActor(person){
         this.setState({
             person: person,
@@ -74,53 +82,42 @@ class People extends React.Component{
         })
     };
 
-    showModalCreate = () => {
-        this.setState({
-            modalCreate: true,
-        });
+
+    // CRUD Operations for persons
+    createPerson = () => {
+        let person = { ...this.state.form };
+        let peopleList = this.state.people;
+        peopleService.create(person)
+            .then( _person => {
+                peopleList.push(_person);
+                this.setState({ modalCreate: false, people: peopleList });
+            });
     };
 
     editPerson = (person) => {
         let index = 0;
         let list = this.state.people;
-        list.map((item) => {
-            if (person.id === item.id) {
-                list[index].firstName = person.firstName;
-                list[index].lastName = person.lastName;
-                list[index].aliases = person.aliases;
-            }
-            index++;
-        });
-        this.setState({ data: list, modalUpdate: false });
+        peopleService.update(person.id, person)
+            .then(_person => {
+                list[list.findIndex(x => x.id === person.id)] = _person;
+                this.setState({ people: list, modalUpdate: false });
+            });
     };
 
     deletePerson = (person) => {
         let option = window.confirm("Are you sure you want delete it? " + person.id);
         if (option === true) {
-            let index = 0;
             let _people = this.state.people;
-            _people.map((item) => {
-                if (person.id === item.id) {
-                    _people.splice(index, 1);
-                }
-                index++;
-            });
-            this.setState({ people: _people, modalUpdate: false });
+            peopleService._delete(person.id)
+                .then(() => {
+                    _people.splice(_people.findIndex(x => x.id === person.id), 1);
+                    this.setState({ people: _people, modalUpdate: false });
+                });
         }
     };
 
-    createPerson = () => {
-        let person = { ...this.state.form };
-        let peopleList = this.state.people;
-        securedAxiosInstance.post("api/v1/people", {
-            firstName: person.firstName,
-            lastName: person.lastName,
-            aliases: person.aliases
-        });
+    // CRUD Operations for movies done by people
 
-        peopleList.push(person);
-        this.setState({ modalCreate: false, data: peopleList });
-    };
 
     handleChange = (e) => {
         this.setState({
@@ -157,22 +154,22 @@ class People extends React.Component{
                             </thead>
 
                             <tbody>
-                            {this.state.people.map((dato) => (
-                                <tr key={ dato.id }>
-                                    <td>{ dato.id }</td>
-                                    <td>{ dato.firstName }</td>
-                                    <td>{ dato.lastName }</td>
-                                    <td>{ dato.aliases }</td>
+                            {this.state.people.map((person) => (
+                                <tr key={ person.id }>
+                                    <td>{ person.id }</td>
+                                    <td>{ person.firstName }</td>
+                                    <td>{ person.lastName }</td>
+                                    <td>{ person.aliases }</td>
                                     { currentUser &&
                                     <td>
                                         <div className="d-flex flex-column">
-                                            <Button color="secundary" onClick={() => this.showMoviesAsActor(dato)}>
+                                            <Button color="secundary" onClick={() => this.showMoviesAsActor(person)}>
                                                 Actor/Actress
                                             </Button>
-                                            <Button color="secundary" onClick={() => this.showMoviesAsDirector(dato)}>
+                                            <Button color="secundary" onClick={() => this.showMoviesAsDirector(person)}>
                                                 Director
                                             </Button>
-                                            <Button color="secundary" onClick={() => this.showMoviesAsProducer(dato)}>
+                                            <Button color="secundary" onClick={() => this.showMoviesAsProducer(person)}>
                                                 Producer
                                             </Button>
                                         </div>
@@ -181,8 +178,8 @@ class People extends React.Component{
 
                                     { currentUser &&
                                     <td>
-                                        <Button color="primary" onClick={() => this.showModalUpdate(dato)}>Edit</Button>
-                                        <Button color="danger" onClick={() => this.deletePerson(dato)}>Delete</Button>
+                                        <Button className={'mx-1'} color="primary" onClick={() => this.showModalUpdate(person)}>Edit</Button>
+                                        <Button className={'mx-1'} color="danger" onClick={() => this.deletePerson(person)}>Delete</Button>
                                     </td>
                                     }
 
@@ -195,15 +192,12 @@ class People extends React.Component{
                 {/*Action modal update data*/}
                 <Modal isOpen={this.state.modalUpdate}>
                     <ModalHeader>
-                        <div>
-                            <h3>Edit Person</h3>
-                        </div>
+                        <div><h3>Edit Person</h3></div>
                     </ModalHeader>
 
                     <ModalBody>
                         <FormGroup>
                             <label>Id:</label>
-
                             <input
                                 className="form-control"
                                 readOnly
@@ -244,13 +238,10 @@ class People extends React.Component{
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button
-                            color="primary"
-                            onClick={() => this.editPerson(this.state.form)}
-                        >
+                        <Button color="primary" onClick={() => this.editPerson(this.state.form)}>
                             Edit
                         </Button>
-                        <Button color="danger" onClick={() => this.closeModalUpdate()}>
+                        <Button color="danger" onClick={() => this.setState({ modalUpdate: false })}>
                             Cancel
                         </Button>
                     </ModalFooter>
@@ -299,10 +290,7 @@ class People extends React.Component{
                         <Button color="primary" onClick={() => this.createPerson()}>
                             Create
                         </Button>
-                        <Button
-                            className="btn btn-danger"
-                            onClick={() => this.closeModalCreate()}
-                        >
+                        <Button className="btn btn-danger" onClick={() => this.setState({ modalCreate: false })}>
                             Cancel
                         </Button>
                     </ModalFooter>
