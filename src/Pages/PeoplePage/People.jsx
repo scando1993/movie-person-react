@@ -1,7 +1,6 @@
 import React from "react";
 import {Button, Container, FormGroup, Modal, ModalBody, ModalFooter, ModalHeader, Table} from "reactstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import {plainAxiosInstance, securedAxiosInstance} from "../../_services/axiosService";
 import './People.css'
 import {authenticationService, peopleService} from "../../_services";
 
@@ -148,7 +147,7 @@ class People extends React.Component{
                                 <th>First Name</th>
                                 <th>Last Name</th>
                                 <th>Aliases</th>
-                                { currentUser && <th>Movies as:</th> }
+                                <th>Movies as:</th>
                                 { currentUser && <th>Actions</th> }
                             </tr>
                             </thead>
@@ -160,21 +159,17 @@ class People extends React.Component{
                                     <td>{ person.firstName }</td>
                                     <td>{ person.lastName }</td>
                                     <td>{ person.aliases }</td>
-                                    { currentUser &&
                                     <td>
-                                        <div className="d-flex flex-column">
-                                            <Button color="secundary" onClick={() => this.showMoviesAsActor(person)}>
-                                                Actor/Actress
-                                            </Button>
-                                            <Button color="secundary" onClick={() => this.showMoviesAsDirector(person)}>
-                                                Director
-                                            </Button>
-                                            <Button color="secundary" onClick={() => this.showMoviesAsProducer(person)}>
-                                                Producer
-                                            </Button>
-                                        </div>
+                                        <Button className="mx-2" color="primary" onClick={() => this.showMoviesAsActor(person)}>
+                                            Actor/Actress
+                                        </Button>
+                                        <Button className="mx-2" color="primary" onClick={() => this.showMoviesAsDirector(person)}>
+                                            Director
+                                        </Button>
+                                        <Button className="mx-2" color="primary" onClick={() => this.showMoviesAsProducer(person)}>
+                                            Producer
+                                        </Button>
                                     </td>
-                                    }
 
                                     { currentUser &&
                                     <td>
@@ -308,19 +303,21 @@ class People extends React.Component{
                                 <th>ID</th>
                                 <th>Title</th>
                                 <th>Release Year</th>
-                                <th>Actions</th>
+                                { currentUser && <th>Actions</th>}
                             </tr>
                             </thead>
 
-                            <tbody>{this.state.person.movies_as_actor_or_actress.map((dato) => (
-                                <tr key={ 'actor_' + dato.id }>
-                                    <td>{ dato.id }</td>
-                                    <td>{ dato.title }</td>
-                                    <td>{ dato.releaseYear }</td>
-                                    <td>
-                                        <Button color="primary" onClick={() => this.showModalUpdate(dato)}>Edit</Button>
-                                        <Button color="danger" onClick={() => this.deletePerson(dato)}>Delete</Button>
-                                    </td>
+                            <tbody>{this.state.person.movies_as_actor_or_actress.map((movie) => (
+                                <tr key={ 'actor_' + movie.id }>
+                                    <td>{ movie.id }</td>
+                                    <td>{ movie.title }</td>
+                                    <td>{ movie.releaseYear }</td>
+                                    { currentUser &&
+                                        <td>
+                                            <Button color="primary" onClick={() => this.showModalUpdate(movie)}>Edit</Button>
+                                            <Button color="danger" onClick={() => this.deletePerson(movie)}>Delete</Button>
+                                        </td>
+                                    }
                                 </tr>
                             ))}
                             </tbody>
@@ -328,9 +325,12 @@ class People extends React.Component{
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button color="primary" onClick={() => this.addMovieAsActor()}>
-                            Add movie
-                        </Button>
+                        { currentUser &&
+                            <Button color="primary" onClick={() => this.addMovieAsActor()}>
+                                Add movie
+                            </Button>
+                        }
+
                         <Button className="btn btn-danger" onClick={() => this.setState({ modalActor: false })}>
                             Close
                         </Button>
@@ -349,7 +349,7 @@ class People extends React.Component{
                                 <th>ID</th>
                                 <th>Title</th>
                                 <th>Release Year</th>
-                                <th>Actions</th>
+                                { currentUser && <th>Actions</th>}
                             </tr>
                             </thead>
 
@@ -358,10 +358,12 @@ class People extends React.Component{
                                     <td>{ dato.id }</td>
                                     <td>{ dato.title }</td>
                                     <td>{ dato.releaseYear }</td>
-                                    <td>
-                                        <Button color="primary" onClick={() => this.showModalUpdate(dato)}>Edit</Button>
-                                        <Button color="danger" onClick={() => this.deletePerson(dato)}>Delete</Button>
-                                    </td>
+                                    { currentUser &&
+                                        <td>
+                                            <Button color="primary" onClick={() => this.showModalUpdate(dato)}>Edit</Button>
+                                            <Button color="danger" onClick={() => this.deletePerson(dato)}>Delete</Button>
+                                        </td>
+                                    }
                                 </tr>
                             ))}
                             </tbody>
@@ -369,9 +371,11 @@ class People extends React.Component{
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button color="primary" onClick={() => this.createPerson()}>
-                            Add Movie
-                        </Button>
+                        { currentUser &&
+                            <Button color="primary" onClick={() => this.createPerson()}>
+                                Add Movie
+                            </Button>
+                        }
                         <Button className="btn btn-danger" onClick={() => this.setState({ modalDirector: false })}>
                             Close
                         </Button>
@@ -390,19 +394,21 @@ class People extends React.Component{
                                 <th>ID</th>
                                 <th>Title</th>
                                 <th>Release Year</th>
-                                <th>Actions</th>
+                                { currentUser && <th>Actions</th> }
                             </tr>
                             </thead>
 
-                            <tbody>{this.state.person.movies_as_producer.map((dato) => (
-                                <tr key={ 'prod_' + dato.id }>
-                                    <td>{ dato.id }</td>
-                                    <td>{ dato.title }</td>
-                                    <td>{ dato.releaseYear }</td>
-                                    <td>
-                                        <Button color="primary" onClick={() => this.showModalUpdate(dato)}>Edit</Button>
-                                        <Button color="danger" onClick={() => this.deletePerson(dato)}>Delete</Button>
-                                    </td>
+                            <tbody>{this.state.person.movies_as_producer.map((movie) => (
+                                <tr key={ 'prod_' + movie.id }>
+                                    <td>{ movie.id }</td>
+                                    <td>{ movie.title }</td>
+                                    <td>{ movie.releaseYear }</td>
+                                    { currentUser &&
+                                        <td>
+                                            <Button color="primary" onClick={() => this.showModalUpdate(movie)}>Edit</Button>
+                                            <Button color="danger" onClick={() => this.deletePerson(movie)}>Delete</Button>
+                                        </td>
+                                    }
                                 </tr>
                             ))}
                             </tbody>
@@ -410,9 +416,11 @@ class People extends React.Component{
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button color="primary" onClick={() => this.createPerson()}>
-                            Create
-                        </Button>
+                        { currentUser &&
+                            <Button color="primary" onClick={() => this.createPerson()}>
+                                Create
+                            </Button>
+                        }
                         <Button className="btn btn-danger" onClick={() => this.setState({ modalProducer: false })} >
                             Close
                         </Button>

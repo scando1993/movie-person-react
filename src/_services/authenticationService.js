@@ -14,7 +14,7 @@ export const authenticationService = {
 }
 
 function signup(username, password){
-    return axiosService.plainAxiosInstance.post('signin', {
+    return axiosService.plainAxiosInstance.post('signup', {
         email: username,
         password: password
     })
@@ -34,7 +34,7 @@ function signup(username, password){
 }
 
 function login(username, password){
-    return axiosService.plainAxiosInstance.post('signup',{
+    return axiosService.plainAxiosInstance.post('signin',{
         email: username,
         password: password
     })

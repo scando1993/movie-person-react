@@ -1,47 +1,31 @@
+import './Signup.css'
+import {authenticationService} from "../../_services";
+import {Button, FormGroup} from "reactstrap";
 import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import {
-    Button,
-    FormGroup
-} from "reactstrap";
-import "./Login.css";
-import { authenticationService } from "../../_services";
 import {history} from "../../_helpers";
 
-class Login extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            email: "",
-            password: "",
-            error: ""
-        }
-
-        if (authenticationService.currentUserValue){
-            this.props.history.push('/home')
-        }
-    }
-    validateForm() {
-        return this.state.email.length > 0 && this.state.password.length > 0;
+class Signup extends React.Component{
+    state = {
+        email: '',
+        password: '',
     }
 
     handleSubmit(event) {
         event.preventDefault();
-        console.log(this.state);
-        authenticationService.login(this.state.email, this.state.password)
+        authenticationService.signup(this.state.email, this.state.password)
             .then(
                 user => {
-                    const { from } = this.props.location.state || { from: { pathname: "/" }}
+                    const { from } = this.props.location.state || { from: { pathname: "/login" }}
                     this.props.history.push(from);
                 })
             .catch(error => {
-                this.props.history.push('/');
+                this.props.history.push('/home');
             });
     }
+
     render() {
         return (
-            <div className="Login">
+            <div className="Signup">
                 <form onSubmit={ (e) =>{ this.handleSubmit(e) }  }>
                     <FormGroup>
                         <label>Email</label>
@@ -64,17 +48,16 @@ class Login extends React.Component {
                             value={ this.state.password }
                         />
                     </FormGroup>
-                    <Button block disabled={ () => !this.validateForm() } type="submit">
-                        Login
+                    <Button block color={'success'} type="submit">
+                        Create Account
                     </Button>
-                    <Button color={'primary'} block onClick={ () => { history.push('/signup') } }>
-                        Sign In
+                    <Button block color={'danger'} onClick={ () => { history.push('/login') } }>
+                        Go Back
                     </Button>
                 </form>
             </div>
         );
     }
-
 }
 
-export { Login };
+export { Signup }

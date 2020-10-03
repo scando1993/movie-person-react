@@ -1,8 +1,6 @@
 import React from "react";
-import axios from 'axios';
 import "./Movies.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import API, {plainAxiosInstance, securedAxiosInstance} from '../../_services/axiosService';
 import {
     Table,
     Button,
@@ -139,56 +137,58 @@ class Movies extends React.Component {
                         </Button>
                     </div>
                     }
-                    <div>
-                        <Table>
-                            <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Title</th>
-                                <th>Release Year</th>
-                                {
-                                    currentUser && <th>Actions</th>
-                                }
-                            </tr>
-                            </thead>
+                    { this.state.movies.length === 0
+                        ? !this.state.loading ? <div><p>No data available!</p></div> : <div><p>Loading...</p></div>
+                        : <div>
+                            <Table>
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Release Year</th>
+                                    <th>Options</th>
+                                    {
+                                        currentUser && <th>Actions</th>
+                                    }
+                                </tr>
+                                </thead>
 
-                            <tbody>
-                            {this.state.movies.map((dato) => (
-                                <tr key={dato.id}>
-                                    <td>{dato.id}</td>
-                                    <td>{dato.title}</td>
-                                    <td>{dato.releaseYear}</td>
-                                    { currentUser &&
-                                    <td>
-                                        <div className="d-flex flex-column">
-                                            <Button color="secundary" onClick={() => this.showCasting(dato)}>
+                                <tbody>
+                                {this.state.movies.map((movie) => (
+                                    <tr key={movie.id}>
+                                        <td>{movie.id}</td>
+                                        <td>{movie.title}</td>
+                                        <td>{movie.releaseYear}</td>
+                                        <td>
+                                            <Button className="mx-2" color="primary" onClick={() => this.showCasting(movie)}>
                                                 Casting
                                             </Button>
-                                            <Button color="secundary" onClick={() => this.showDirectors(dato)}>
+                                            <Button className="mx-2" color="primary" onClick={() => this.showDirectors(movie)}>
                                                 Directors
                                             </Button>
-                                            <Button color="secundary" onClick={() => this.showProducers(dato)}>
+                                            <Button className="mx-2" color="primary" onClick={() => this.showProducers(movie)}>
                                                 Producers
                                             </Button>
-                                        </div>
-                                    </td>
-                                    }
-                                    { currentUser &&
-                                    <td>
-                                        <Button color="primary" onClick={() => this.showModalUpdate(dato)}>
-                                            Edit
-                                        </Button>{" "}
-                                        <Button color="danger" onClick={() => this.deleteMovie(dato)}>
-                                            Delete
-                                        </Button>
-                                    </td>
-                                    }
+                                        </td>
 
-                                </tr>
-                            ))}
-                            </tbody>
-                        </Table>
-                    </div>
+                                        { currentUser &&
+                                        <td>
+                                            <Button color="primary" onClick={() => this.showModalUpdate(movie)}>
+                                                Edit
+                                            </Button>{" "}
+                                            <Button color="danger" onClick={() => this.deleteMovie(movie)}>
+                                                Delete
+                                            </Button>
+                                        </td>
+                                        }
+
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </Table>
+                        </div>
+                    }
+
                 </div>
                 {/*Action modal update data*/}
                 <Modal isOpen={this.state.modalUpdate}>
@@ -290,7 +290,7 @@ class Movies extends React.Component {
                                 <th>First Name</th>
                                 <th>Last Name</th>
                                 <th>Aliases</th>
-                                <th>Actions</th>
+                                { currentUser && <th>Actions</th> }
                             </tr>
                             </thead>
 
@@ -314,9 +314,12 @@ class Movies extends React.Component {
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button color="primary" onClick={() => this.addPersonAsCasting()}>
-                            Add person to casting
-                        </Button>
+                        { currentUser &&
+                            <Button color="primary" onClick={() => this.addPersonAsCasting()}>
+                                Add person to casting
+                            </Button>
+                        }
+
                         <Button className="btn btn-danger" onClick={() => this.setState({ modalCasting: false })}>
                             Close
                         </Button>
@@ -359,9 +362,12 @@ class Movies extends React.Component {
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button color="primary" onClick={() => this.addPersonAsDirector()}>
-                            Add person
-                        </Button>
+                        { currentUser &&
+                            <Button color="primary" onClick={() => this.addPersonAsDirector()}>
+                                Add person
+                            </Button>
+                        }
+
                         <Button className="btn btn-danger" onClick={() => this.setState({ modalDirector: false })}>
                             Close
                         </Button>
@@ -404,9 +410,12 @@ class Movies extends React.Component {
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button color="primary" onClick={() => this.addPersonAsProducer()}>
-                            Create
-                        </Button>
+                        { currentUser &&
+                            <Button color="primary" onClick={() => this.addPersonAsProducer()}>
+                                Create
+                            </Button>
+                        }
+
                         <Button className="btn btn-danger" onClick={() => this.setState({ modalProducer: false })} >
                             Close
                         </Button>
